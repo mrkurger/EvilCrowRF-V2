@@ -1,0 +1,25 @@
+{
+  "name": "EvilCrow RF v2 Control Panel",
+  "short_name": "EvilCrow RF",
+  "description": "Advanced RF control panel for EvilCrow RF v2 device",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxYTFhMWEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjMjE5NkYzIj4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBjbGFzcz0idy02IGgtNiI+CiAgPHBhdGggc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBkPSJtMy43NSA5IDkuMzAzIDMuMzc2YS45Ljk0IDAgMCAwIDEuMDk0LS45NGwtMS43MDQtNC4yOGEuNzUuNzUgMCAwIDEgLjM1My0uOTMzbDEuNDktLjc0NWEuNzUuNzUgMCAwIDEgLjY3MSAwbDEuNDkuNzQ1YS43NS43NSAwIDAgMSAuMzUzLjkzM2wtMS43MDQgNC4yOGEuOTQuOTQgMCAwIDAgMS4wOTQuOTRMMjAuMjUgOSIgLz4KPC9zdmc+Cjwvc3ZnPgo8L3N2Zz4K",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMxYTFhMWEiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzIxOTZGMyI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMjQgMjQiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgY2xhc3M9InctNiBoLTYiPgogIDxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0ibTMuNzUgOSA5LjMwMyAzLjM3NmEuOS45NCAwIDAgMCAxLjA5NC0uOTRsLTEuNzA0LTQuMjhhLjc1Ljc1IDAgMCAxIC4zNTMtLjkzM2wxLjQ5LS43NDVhLjc1Ljc1IDAgMCAxIC42NzEgMGwxLjQ5Ljc0NWEuNzUuNzUgMCAwIDEgLjM1My45MzNsLTEuNzA0IDQuMjhhLjk0Ljk0IDAgMCAwIDEuMDk0Ljk0TDIwLjI1IDkiIC8+Cjwvc3ZnPgo8L3N2Zz4KPC9zdmc+Cg==",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["utilities", "developer"],
+  "lang": "en",
+  "dir": "ltr"
+}

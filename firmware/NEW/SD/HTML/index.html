@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvilCrow RF v2 - Enhanced Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="javascript.js"></script>
+</head>
+<body>
+    <nav id='menu'>
+        <input type='checkbox' id='responsive-menu' onclick='updatemenu()'><label></label>
+        <ul>
+            <li><a href='/'>🏠 Dashboard</a></li>
+            <li><a class='dropdown-arrow'>📡 RF Operations</a>
+                <ul class='sub-menus'>
+                    <li><a href='/rxconfig.html'>📥 RX Config</a></li>
+                    <li><a href='/txconfig.html'>📤 RAW TX</a></li>
+                    <li><a href='/txbinary.html'>🔢 Binary TX</a></li>
+                    <li><a href='/txtesla.html'>🚗 Tesla TX</a></li>
+                </ul>
+            </li>
+            <li><a class='dropdown-arrow'>📺 TV Remote</a>
+                <ul class='sub-menus'>
+                    <li><a href='#' onclick='tvControl("turnoff")'>📺 Turn Off TVs</a></li>
+                    <li><a href='#' onclick='tvControl("turnon")'>🔆 Turn On TVs</a></li>
+                    <li><a href='#' onclick='tvControl("scan")'>🔍 Scan & Turn Off</a></li>
+                    <li><a href='#' onclick='showTVBrands()'>📋 Supported Brands</a></li>
+                </ul>
+            </li>
+            <li><a href='/jammer.html'>📻 Jammer</a></li>
+            <li><a class='dropdown-arrow'>🔧 Advanced</a>
+                <ul class='sub-menus'>
+                    <li><a href='#' onclick='showSignalAnalysis()'>📊 Signal Analysis</a></li>
+                    <li><a href='#' onclick='showAttackPanel()'>🔓 Attack Tools</a></li>
+                    <li><a href='/txprotocol.html'>📡 Protocol TX</a></li>
+                    <li><a href='/uploadxmlfiles.html'>📤 Upload Protocols</a></li>
+                </ul>
+            </li>
+            <li><a class='dropdown-arrow'>⚙️ System</a>
+                <ul class='sub-menus'>
+                    <li><a href='/update'>🔄 OTA Update</a></li>
+                    <li><a href='/viewlog'>📋 View Logs</a></li>
+                    <li><a href='/wificonfig.html'>📶 WiFi Config</a></li>
+                    <li><a href='/updatesd.html'>💾 SD Update</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- TV Remote Quick Controls -->
+    <div class="tv-quick-controls" id="tv-quick-controls">
+        <h4>📺 Quick TV Control</h4>
+        <button class="tv-quick-btn" onclick="tvControl('scan')">🔍 Turn Off All TVs</button>
+        <button class="tv-quick-btn" onclick="tvControl('turnon')">🔆 Turn On TVs</button>
+        <button class="tv-quick-btn" onclick="showTVBrands()">📋 Show Brands</button>
+        <button class="tv-quick-btn" onclick="toggleTVControls()">❌ Close</button>
+    </div>
+
+    <div class="dashboard">
+        <!-- System Status Card -->
+        <div class="card">
+            <h3>📊 System Status</h3>
+            <div id="system-status">
+                <p><span class="status-indicator status-online"></span>Status: <span id="status">Loading...</span></p>
+                <p>🕒 Uptime: <span id="uptime">-</span></p>
+                <p>💾 Free Memory: <span id="memory">-</span> KB</p>
+                <p>📡 Current Module: <span id="module">CC1101</span></p>
+                <p>📶 WiFi Clients: <span id="clients">-</span></p>
+            </div>
+            <button class="btn btn-info" onclick="refreshStatus()">🔄 Refresh</button>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card">
+            <h3>⚡ Quick Actions</h3>
+            <div class="tv-controls">
+                <button class="btn btn-success" onclick="quickReceive()">📥 Start RX</button>
+                <button class="btn btn-warning" onclick="quickJammer()">📻 Quick Jam</button>
+                <button class="btn btn-danger" onclick="tvControl('scan')">📺 TV Off</button>
+                <button class="btn btn-info" onclick="showSignalAnalysis()">📊 Analyze</button>
+            </div>
+        </div>
+
+        <!-- TV Remote Control Card -->
+        <div class="card">
+            <h3>📺 TV Remote Control</h3>
+            <div class="form-group">
+                <label for="tv-brand">Select TV Brand:</label>
+                <select id="tv-brand" class="form-select">
+                    <option value="">Auto-detect (Universal)</option>
+                    <option value="Samsung">Samsung</option>
+                    <option value="LG">LG</option>
+                    <option value="Sony">Sony</option>
+                    <option value="Panasonic">Panasonic</option>
+                    <option value="Philips">Philips</option>
+                    <option value="TCL">TCL</option>
+                    <option value="Hisense">Hisense</option>
+                    <option value="Universal">Universal Codes</option>
+                </select>
+            </div>
+            <div class="tv-controls">
+                <button class="tv-btn tv-power-off" onclick="tvControlWithBrand('turnoff')">
+                    📺 Power Off
+                </button>
+                <button class="tv-btn tv-power-on" onclick="tvControlWithBrand('turnon')">
+                    🔆 Power On
+                </button>
+                <button class="tv-btn tv-scan" onclick="tvControl('scan')">
+                    🔍 Scan All Brands
+                </button>
+            </div>
+            <div id="tv-status" class="signal-display" style="min-height: 60px; margin-top: 1rem;">
+                Ready to control TVs. Select a brand or use scan mode.
+            </div>
+        </div>
+
+        <!-- Signal Monitor Card -->
+        <div class="card">
+            <h3>📡 Signal Monitor</h3>
+            <div class="form-group">
+                <button class="btn btn-success" id="rx-toggle" onclick="toggleReceive()">Start RX</button>
+                <button class="btn btn-warning" onclick="clearSignalDisplay()">🗑️ Clear</button>
+            </div>
+            <div class="signal-display" id="signal-display">
+                Waiting for signals...
+            </div>
+        </div>
+
+        <!-- Advanced Signal Analysis Card -->
+        <div class="card">
+            <h3>📊 Advanced Analysis</h3>
+            <div class="tv-controls">
+                <button class="btn btn-info" onclick="showSignalAnalysis()">📊 Analyze Signal</button>
+                <button class="btn btn-warning" onclick="showAttackPanel()">🔓 Attack Tools</button>
+                <button class="btn btn-success" onclick="loadProtocols()">📡 Load Protocols</button>
+                <button class="btn btn-danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+            </div>
+            <div id="analysis-results" class="signal-display" style="min-height: 80px; margin-top: 1rem;">
+                No analysis data available. Capture a signal first.
+            </div>
+        </div>
+
+        <!-- Recent Activity Card -->
+        <div class="card">
+            <h3>📋 Recent Activity</h3>
+            <div id="activity-log" class="signal-display" style="max-height: 150px;">
+                <div class="activity-item">
+                    <span class="activity-time">--:--</span>
+                    <span class="activity-text">System started</span>
+                </div>
+            </div>
+            <button class="btn btn-warning" onclick="clearActivity()">🗑️ Clear Log</button>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 EvilCrow RF v2 Dashboard Loaded');
+            refreshStatus();
+            loadTVBrands();
+            
+            // Show TV quick controls by default
+            setTimeout(() => {
+                document.getElementById('tv-quick-controls').classList.add('show');
+            }, 1000);
+        });
+
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshStatus, 30000);
+        
+        // Auto-refresh signal display every 5 seconds when RX is active
+        setInterval(() => {
+            if (document.getElementById('rx-toggle').textContent.includes('Stop')) {
+                updateSignalDisplay();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
