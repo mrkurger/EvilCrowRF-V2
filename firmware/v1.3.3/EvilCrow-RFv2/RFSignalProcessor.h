@@ -4,6 +4,10 @@
 #include "MemoryManager.h"
 #include "ELECHOUSE_CC1101_SRC_DRV.h"
 
+// Forward declare CC1101 class to avoid circular dependencies
+class ELECHOUSE_CC1101_SRC_DRV;
+extern ELECHOUSE_CC1101_SRC_DRV ELECHOUSE_CC1101;
+
 class RFSignalProcessor
 {
 public:
@@ -29,6 +33,11 @@ public:
         size_t rawCount;
         size_t smoothCount;
         uint32_t errorTolerance;
+        ModulationType modulation;
+        uint32_t frequency;
+        uint16_t deviation;
+        uint32_t sampleRate;
+        bool isValid;
     };
 
     struct ProtocolInfo
@@ -74,7 +83,7 @@ public:
 
     static RFSignalProcessor &getInstance()
     {
-        static RFSignalProcessor instance;
+        static RFSignalProcessor instance(ELECHOUSE_CC1101);
         return instance;
     }
 
@@ -82,9 +91,9 @@ public:
     void cleanup();
 
     // Signal capture
-    bool startCapture();
+    bool startCapture(uint32_t freq, ModulationType mod = ModulationType::OOK);
     bool stopCapture();
-    void processPulse(unsigned long duration);
+    bool processPulse(unsigned long duration);
 
     // Signal processing
     bool smoothSignal();
@@ -108,8 +117,19 @@ public:
     SignalBuffer *getBuffer() { return &signalBuffer; }
 
 private:
-    RFSignalProcessor() {}
-    ~RFSignalProcessor() { cleanup(); }
+    RFSignalProcessor(ELECHOUSE_CC1101_SRC_DRV &radioModule)
+        : radio(&radioModule), isCapturing(false), lastPulseTime(0), frequency(0), deviation(0), modulation(ModulationType::UNKNOWN), sampleRate(0)
+    {
+        init();
+        memset(&signalBuffer, 0, sizeof(SignalBuffer));
+        memset(&detectedPattern, 0, sizeof(Pattern));
+    }
+
+    ~RFSignalProcessor()
+    {
+        cleanup();
+    }
+
     RFSignalProcessor(const RFSignalProcessor &) = delete;
     RFSignalProcessor &operator=(const RFSignalProcessor &) = delete;
 
@@ -120,9 +140,47 @@ private:
     void calculateSpectralProperties(SpectralInfo &spectrum);
     ModulationType identifyModulationType(float avgWidth, float variance, float dynamicRange);
 
+    // Signal buffer and state
     SignalBuffer signalBuffer;
     bool isCapturing;
     unsigned long lastPulseTime;
+
+    // Configuration
+    uint32_t frequency;
+    uint16_t deviation;
+    ModulationType modulation;
+    uint32_t sampleRate;
+
+    // Additional private methods
+    bool detectPattern();
+
+    // Pattern detection results
+    struct Pattern
+    {
+        unsigned long *timings;
+        size_t length;
+        float confidence;
+    } detectedPattern;
+
+    // Hardware interface
+    ELECHOUSE_CC1101_SRC_DRV *radio;
+
+public:
+    bool beginReceive(uint32_t freq, ModulationType mod = ModulationType::OOK);
+    bool endReceive();
+    bool transmitRaw(const unsigned long *timings, size_t count);
+    bool transmitPattern(const Pattern &pattern);
+    const SignalBuffer &getCurrentBuffer() const { return signalBuffer; }
+    bool isReceiving() const { return isCapturing; }
+    ModulationType getModulation() const { return modulation; }
+    uint32_t getFrequency() const { return frequency; }
+    uint16_t getDeviation() const { return deviation; }
+
+private:
+    // Utility functions
+    bool configureRadio(uint32_t freq, ModulationType mod);
+    void resetBuffers();
+    bool validateTimings(const unsigned long *timings, size_t count);
 };
 
 #define RF_PROCESSOR RFSignalProcessor::getInstance()

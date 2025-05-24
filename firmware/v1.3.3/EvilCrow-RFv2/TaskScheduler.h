@@ -13,7 +13,7 @@ enum class TaskPriority
     CRITICAL = 0,      // Highest priority, for RF timing critical tasks
     PRIORITY_HIGH = 1, // High priority for signal processing
     NORMAL = 2,        // Normal priority for UI updates, file operations
-    LOW = 3,           // Background tasks
+    PRIORITY_LOW = 3,  // Background tasks
     IDLE = 4           // Only when system is idle
 };
 

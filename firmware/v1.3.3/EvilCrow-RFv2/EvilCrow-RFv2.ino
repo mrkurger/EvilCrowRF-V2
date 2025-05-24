@@ -1,23 +1,39 @@
-#include "ELECHOUSE_CC1101_SRC_DRV.h"
-#include "MemoryManager.h"
-#include "WebRequestHandler.h"
-#include "RFSignalProcessor.h"
-#include "AttackManager.h"
-#include <WiFiClient.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
+#include <AsyncEventSource.h>
+#include <AsyncJson.h>
+#include <AsyncWebSocket.h>
 #include <ESPAsyncWebSrv.h>
-#include <ElegantOTA.h>
+#include <SPIFFSEditor.h>
+#include <StringArray.h>
+#include <WebAuthentication.h>
+#include <WebHandlerImpl.h>
+#include <WebResponseImpl.h>
+#include "LibConfig.h"
 #include "esp_task_wdt.h"
+
+// Local includes - order matters for dependencies
+#include "RFSignalProcessor.h"
+#include "RFConfig.h"
+#include "AttackManager.h"
+#include "PinDefinitions.h"
+#include "RequestParameters.h"
+#include "WebRequestHandler.h"
+#include "MemoryManager.h"
+#include "ELECHOUSE_CC1101_SRC_DRV.h"
+
+// Global instances
+WebRequestHandler WEB_HANDLER;
+RFConfig rfConfig;
 #define DEST_FS_USES_SD
 #include <ESP32-targz.h>
 #include <SPIFFSEditor.h>
 #include <EEPROM.h>
 #include "SPIFFS.h"
-#include "SPI.h"
 #include <WiFiAP.h>
 #include "FS.h"
 #include "SD.h"
+
+// Use explicit SPI bus number instead of VSPI macro to avoid expansion issues
+SPIClass sdspi(3); // VSPI = 3
 
 #define eepromsize 4096
 #define samplesize 2000
@@ -161,6 +177,18 @@ esp_task_wdt_config_t wdt_config = {
     .timeout_ms = 1000,
     .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
     .trigger_panic = true};
+
+// Interrupt handler attribute for ESP32
+#if defined(ESP32)
+#define RECEIVE_ATTR IRAM_ATTR
+#else
+#define RECEIVE_ATTR ICACHE_RAM_ATTR
+#endif
+
+// Global variables for signal capture
+volatile unsigned long sample[2000];
+volatile unsigned int samplecount = 0;
+const unsigned int minsample = 30;
 
 void onOTAStart()
 {

@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include <ESPAsyncWebSrv.h>
+#include "RequestParameters.h"
+#include "RFConfig.h"
 
 class WebRequestHandler
 {

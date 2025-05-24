@@ -1,11 +1,21 @@
+#include <AsyncTCP.h>
+
+#include <AsyncTCP.h>
+
 #ifndef ATTACK_MANAGER_H
 #define ATTACK_MANAGER_H
 
 #include <Arduino.h>
 #include "TaskScheduler.h"
 #include "RFSignalProcessor.h"
+#include "AttackTypes.h"
+#include <ESPAsyncWebSrv.h>
 
-// AttackType is defined in AttackSelector.h
+
+class SmartHomeAttack;
+
+// Forward declare AttackConfig since it's used in AttackProgress
+struct AttackConfig;
 
 // Attack progress and status tracking
 struct AttackProgress
@@ -18,6 +28,7 @@ struct AttackProgress
     float signalStrength;
     String lastStatus;
     String currentAction;
+    const AttackConfig *config; // Reference to current attack config
 };
 
 // Attack configuration with protocol-specific parameters
@@ -93,7 +104,7 @@ struct AttackConfig
         TaskScheduler &taskScheduler;
         RFSignalProcessor &rfProcessor;
         bool attackRunning;
-        AttackConfig currentConfig;
+        AttackConfig ESPAsyncWebSrv;
         AttackProgress progress;
         TaskHandle_t attackTask;
         TaskHandle_t monitorTask;

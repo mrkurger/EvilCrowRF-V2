@@ -1,6 +1,6 @@
 #pragma once
-#include "AttackManager.h"
 #include "RFSignalProcessor.h"
+#include "AttackTypes.h"
 #include <vector>
 #include <memory>
 

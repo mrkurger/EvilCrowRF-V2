@@ -9,21 +9,20 @@
 #include "WirelessDoorbellAttack.h"
 #include "AttackManager.h"
 
-enum class AttackType
-{
-    SMART_HOME,
-    WEATHER_STATION,
-    VEHICLE_DIAGNOSTICS,
-    KEY_FOB_EXTENSION,
-    RF_REMOTE_OVERRIDE,
-    WIRELESS_DOORBELL
-};
+#include "AttackTypes.h" // Use the unified AttackType enum
 
 class AttackSelector
 {
 public:
-    AttackSelector();
-    ~AttackSelector();
+    static AttackSelector &getInstance()
+    {
+        static AttackSelector instance;
+        return instance;
+    }
+
+    // Delete copy constructor and assignment operator
+    AttackSelector(const AttackSelector &) = delete;
+    AttackSelector &operator=(const AttackSelector &) = delete;
 
     bool initializeAttack(AttackType type);
     bool startAttack(AttackType type);
@@ -55,6 +54,17 @@ public:
     bool configureWirelessDoorbellAttack(const WirelessDoorbellAttack::Config &config);
 
 private:
+    AttackSelector()
+        : smartHomeAttack(nullptr), weatherStationAttack(nullptr), vehicleDiagnosticsAttack(nullptr), keyFobExtensionAttack(nullptr), rfRemoteOverrideAttack(nullptr), wirelessDoorbellAttack(nullptr), currentAttackType(AttackType::SMART_HOME), attackRunning(false)
+    {
+        // Initialize attacks in constructor
+    }
+
+    ~AttackSelector()
+    {
+        cleanupAttacks();
+    }
+
     SmartHomeAttack *smartHomeAttack;
     WeatherStationAttack *weatherStationAttack;
     VehicleDiagnosticsAttack *vehicleDiagnosticsAttack;

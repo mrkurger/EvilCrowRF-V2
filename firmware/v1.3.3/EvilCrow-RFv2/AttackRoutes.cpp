@@ -1,79 +1,104 @@
 #include "AttackSelector.h"
 #include "WebRequestHandler.h"
 
-// Attack configuration paths
-constexpr char ATTACK_CONFIG_PATH[] = "/attacks/";
+#include "AttackRoutes.h"
 
-// Attack type endpoints
-constexpr char SMART_HOME_PATH[] = "/attack/smarthome";
-constexpr char WEATHER_STATION_PATH[] = "/attack/weatherstation";
-constexpr char VEHICLE_DIAG_PATH[] = "/attack/vehiclediag";
-constexpr char KEY_FOB_PATH[] = "/attack/keyfob";
-constexpr char RF_REMOTE_PATH[] = "/attack/rfremote";
-constexpr char DOORBELL_PATH[] = "/attack/doorbell";
+// Define route constants
+const char ATTACK_CONFIG_PATH[] = "/attacks/";
+const char SMART_HOME_PATH[] = "/attack/smarthome";
+const char WEATHER_STATION_PATH[] = "/attack/weatherstation";
+const char VEHICLE_DIAG_PATH[] = "/attack/vehiclediag";
+const char KEY_FOB_PATH[] = "/attack/keyfob";
+const char RF_REMOTE_PATH[] = "/attack/rfremote";
+const char DOORBELL_PATH[] = "/attack/doorbell";
 
 // Global attack selector instance
-AttackSelector ATTACK_SELECTOR;
+static AttackSelector &ATTACK_SELECTOR = AttackSelector::getInstance();
 
 // Add attack routes to web server
 void addAttackRoutes(AsyncWebServer &server)
 {
-
     // Smart Home Attack endpoint
     server.on(SMART_HOME_PATH, HTTP_POST, [](AsyncWebServerRequest *request)
               {
-        SmartHomeAttack::Config config;
-        if (request->hasArg("frequency")) {
+        SmartHomeAttack::Config config{};  // Zero-initialize the config
+
+        if (!request->hasArg("frequency")) {
+            request->send(400, "application/json", "{\"error\":\"Missing frequency parameter\"}");
+            return;
+        }
+
+        try {
             config.frequency = request->arg("frequency").toFloat() * 1000000;
-        }
-        if (request->hasArg("bandwidth")) {
-            config.bandwidth = request->arg("bandwidth").toInt();
-        }
-        if (request->hasArg("captureWindow")) {
-            config.captureWindow = request->arg("captureWindow").toInt();
-        }
-        if (request->hasArg("minRollingCodes")) {
-            config.minRollingCodes = request->arg("minRollingCodes").toInt();
-        }
-        if (request->hasArg("activeJamming")) {
-            config.activeJamming = request->arg("activeJamming") == "true";
-        }
-        if (request->hasArg("replayDelay")) {
-            config.replayDelay = request->arg("replayDelay").toInt();
-        }
-        if (request->hasArg("adaptiveTiming")) {
-            config.adaptiveTiming = request->arg("adaptiveTiming") == "true";
-        }
-        
-        if (ATTACK_SELECTOR.initializeAttack(AttackType::SMART_HOME) &&
-            ATTACK_SELECTOR.configureSmartHomeAttack(config)) {
-            request->send(200, "application/json", "{\"status\":\"success\"}");
-        } else {
-            request->send(500, "application/json", "{\"status\":\"error\"}");
+
+            // Optional parameters
+            if (request->hasArg("bandwidth")) {
+                config.bandwidth = request->arg("bandwidth").toInt();
+            }
+            if (request->hasArg("captureWindow")) {
+                config.captureWindow = request->arg("captureWindow").toInt();
+            }
+            if (request->hasArg("minRollingCodes")) {
+                config.minRollingCodes = request->arg("minRollingCodes").toInt();
+            }
+            if (request->hasArg("activeJamming")) {
+                config.activeJamming = request->arg("activeJamming") == "true";
+            }
+            if (request->hasArg("replayDelay")) {
+                config.replayDelay = request->arg("replayDelay").toInt();
+            }
+            if (request->hasArg("adaptiveTiming")) {
+                config.adaptiveTiming = request->arg("adaptiveTiming") == "true";
+            }
+
+            bool success = ATTACK_SELECTOR.initializeAttack(AttackType::SMART_HOME) &&
+                         ATTACK_SELECTOR.configureSmartHomeAttack(config);
+
+            if (success) {
+                request->send(200, "application/json", "{\"status\":\"success\"}");
+            } else {
+                request->send(500, "application/json", "{\"error\":\"Failed to initialize attack\"}");
+            }
+        } catch (const std::exception& e) {
+            request->send(500, "application/json",
+                        String("{\"error\":\"Configuration error: ") + e.what() + "\"}");
         } });
 
     // Weather Station Attack endpoint
     server.on(WEATHER_STATION_PATH, HTTP_POST, [](AsyncWebServerRequest *request)
               {
-        WeatherStationAttack::Config config;
-        if (request->hasArg("frequency")) {
+        WeatherStationAttack::Config config{};  // Zero-initialize the config
+
+        if (!request->hasArg("frequency")) {
+            request->send(400, "application/json", "{\"error\":\"Missing frequency parameter\"}");
+            return;
+        }
+
+        try {
             config.frequency = request->arg("frequency").toFloat() * 1000000;
-        }
-        if (request->hasArg("modulation")) {
-            config.modulation = request->arg("modulation").toInt();
-        }
-        if (request->hasArg("signalAnalysis")) {
-            config.enableSignalAnalysis = request->arg("signalAnalysis") == "true";
-        }
-        if (request->hasArg("minSignalStrength")) {
-            config.minSignalStrength = request->arg("minSignalStrength").toInt();
-        }
-        
-        if (ATTACK_SELECTOR.initializeAttack(AttackType::WEATHER_STATION) &&
-            ATTACK_SELECTOR.configureWeatherStationAttack(config)) {
-            request->send(200, "application/json", "{\"status\":\"success\"}");
-        } else {
-            request->send(500, "application/json", "{\"status\":\"error\"}");
+
+            // Optional parameters
+            if (request->hasArg("modulation")) {
+                config.modulation = request->arg("modulation").toInt();
+            }
+            if (request->hasArg("signalAnalysis")) {
+                config.enableSignalAnalysis = request->arg("signalAnalysis") == "true";
+            }
+            if (request->hasArg("minSignalStrength")) {
+                config.minSignalStrength = request->arg("minSignalStrength").toInt();
+            }
+
+            bool success = ATTACK_SELECTOR.initializeAttack(AttackType::WEATHER_STATION) &&
+                         ATTACK_SELECTOR.configureWeatherStationAttack(config);
+
+            if (success) {
+                request->send(200, "application/json", "{\"status\":\"success\"}");
+            } else {
+                request->send(500, "application/json", "{\"error\":\"Failed to initialize attack\"}");
+            }
+        } catch (const std::exception& e) {
+            request->send(500, "application/json",
+                        String("{\"error\":\"Configuration error: ") + e.what() + "\"}");
         } });
 
     // Vehicle Diagnostics Attack endpoint
@@ -92,7 +117,7 @@ void addAttackRoutes(AsyncWebServer &server)
         if (request->hasArg("autoDetectProtocol")) {
             config.autoDetectProtocol = request->arg("autoDetectProtocol") == "true";
         }
-        
+
         if (ATTACK_SELECTOR.initializeAttack(AttackType::VEHICLE_DIAGNOSTICS) &&
             ATTACK_SELECTOR.configureVehicleDiagnosticsAttack(config)) {
             request->send(200, "application/json", "{\"status\":\"success\"}");
@@ -119,7 +144,7 @@ void addAttackRoutes(AsyncWebServer &server)
         if (request->hasArg("amplificationEnabled")) {
             config.amplificationEnabled = request->arg("amplificationEnabled") == "true";
         }
-        
+
         if (ATTACK_SELECTOR.initializeAttack(AttackType::KEY_FOB_EXTENSION) &&
             ATTACK_SELECTOR.configureKeyFobExtensionAttack(config)) {
             request->send(200, "application/json", "{\"status\":\"success\"}");
@@ -143,7 +168,7 @@ void addAttackRoutes(AsyncWebServer &server)
         if (request->hasArg("learningMode")) {
             config.enableLearningMode = request->arg("learningMode") == "true";
         }
-        
+
         if (ATTACK_SELECTOR.initializeAttack(AttackType::RF_REMOTE_OVERRIDE) &&
             ATTACK_SELECTOR.configureRFRemoteOverrideAttack(config)) {
             request->send(200, "application/json", "{\"status\":\"success\"}");
@@ -167,7 +192,7 @@ void addAttackRoutes(AsyncWebServer &server)
         if (request->hasArg("patternLearning")) {
             config.enablePatternLearning = request->arg("patternLearning") == "true";
         }
-        
+
         if (ATTACK_SELECTOR.initializeAttack(AttackType::WIRELESS_DOORBELL) &&
             ATTACK_SELECTOR.configureWirelessDoorbellAttack(config)) {
             request->send(200, "application/json", "{\"status\":\"success\"}");

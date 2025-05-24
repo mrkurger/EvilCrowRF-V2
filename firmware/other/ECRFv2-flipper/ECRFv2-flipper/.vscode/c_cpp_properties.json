@@ -1,0 +1,35 @@
+{
+
+    "configurations": [
+
+        {
+
+            "name": "Mac",
+
+            "includePath": [
+
+                "${workspaceFolder}/**",
+
+                "~/Library/Arduino15/packages/esp32/hardware/esp32/2.0.14/cores/esp32",
+
+                "~/Library/Arduino15/packages/esp32/hardware/esp32/2.0.14/tools/sdk/esp32/include"
+
+            ],
+
+            "defines": [],
+
+            "macFrameworkPath": [],
+
+            "cStandard": "c17",
+
+            "cppStandard": "c++17",
+
+            "intelliSenseMode": "macos-clang-x64"
+
+        }
+
+    ],
+
+    "version": 4
+
+}

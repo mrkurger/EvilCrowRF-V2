@@ -1,6 +1,9 @@
 #include "RFSignalProcessor.h"
 #include "MemoryManager.h"
 #include <complex>
+#include <algorithm>
+#include <cmath>
+#include "esp_log.h"
 
 bool RFSignalProcessor::init()
 {
@@ -879,4 +882,69 @@ bool RFSignalProcessor::analyzeSignalQuality(QualityMetrics &metrics)
     metrics.stability = max(0.0f, min(100.0f, stabilityScore));
 
     return true;
+}
+
+bool RFSignalProcessor::configureRadio(uint32_t freq, ModulationType mod)
+{
+    frequency = freq;
+    modulation = mod;
+
+    // Configure CC1101
+    radio.setModulation((mod == ModulationType::FSK) ? 2 : 0); // 0=OOK/ASK, 2=FSK
+    radio.setMHZ(freq);
+
+    if (mod == ModulationType::FSK)
+    {
+        radio.setDeviation(deviation);
+    }
+
+    return true;
+}
+
+void RFSignalProcessor::resetBuffers()
+{
+    signalBuffer.rawCount = 0;
+    signalBuffer.smoothCount = 0;
+    signalBuffer.isValid = false;
+}
+
+bool RFSignalProcessor::validateTimings(const unsigned long *timings, size_t count)
+{
+    if (!timings || count < MIN_SAMPLES || count > MAX_SAMPLES)
+    {
+        return false;
+    }
+
+    // Check for reasonable pulse widths
+    for (size_t i = 0; i < count; i++)
+    {
+        if (timings[i] < MIN_PULSE_WIDTH)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool RFSignalProcessor::transmitRaw(const unsigned long *timings, size_t count)
+{
+    if (!validateTimings(timings, count))
+    {
+        return false;
+    }
+
+    // Configure radio for transmission
+    radio.setPktLen(0);   // Infinite packet mode
+    radio.setTxPower(10); // Set power level
+
+    // Transmit the signal
+    radio.SendData((byte *)timings, count * sizeof(unsigned long));
+
+    return true;
+}
+
+bool RFSignalProcessor::transmitPattern(const Pattern &pattern)
+{
+    return transmitRaw(pattern.timings, pattern.length);
 }
