@@ -57,7 +57,7 @@
         <button class="tv-quick-btn" onclick="toggleTVControls()">❌ Close</button>
     </div>
 
-    <div class="dashboard">
+    <div class="dashboard" style="display: none;">
         <!-- System Status Card -->
         <div class="card">
             <h3>📊 System Status</h3>
@@ -115,29 +115,237 @@
             </div>
         </div>
 
-        <!-- Signal Monitor Card -->
+        <!-- Advanced Signal Scanner Card -->
         <div class="card">
-            <h3>📡 Signal Monitor</h3>
-            <div class="form-group">
-                <button class="btn btn-success" id="rx-toggle" onclick="toggleReceive()">Start RX</button>
-                <button class="btn btn-warning" onclick="clearSignalDisplay()">🗑️ Clear</button>
+            <h3>📡 Advanced Signal Scanner</h3>
+            <div class="scanner-controls">
+                <div class="form-group">
+                    <label for="scan-frequency">Frequency Range (MHz):</label>
+                    <div class="input-group">
+                        <input type="number" id="scan-start" class="form-control" value="300" min="300" max="928" step="0.1" placeholder="Start">
+                        <span class="input-group-text">to</span>
+                        <input type="number" id="scan-end" class="form-control" value="928" min="300" max="928" step="0.1" placeholder="End">
+                        <button class="btn btn-primary" onclick="startFrequencyScan()">🔍 Scan</button>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-success" id="rx-toggle" onclick="toggleReceive()">📥 Start RX</button>
+                    <button class="btn btn-info" onclick="startSpectrumAnalyzer()">📊 Spectrum</button>
+                    <button class="btn btn-warning" onclick="clearSignalDisplay()">🗑️ Clear</button>
+                    <button class="btn btn-danger" onclick="emergencyStop()">🛑 Stop All</button>
+                </div>
             </div>
+
+            <!-- Spectrum Analyzer Display -->
+            <div class="spectrum-container" id="spectrum-container" style="display: none;">
+                <div class="spectrum-header">
+                    <h4>📊 Real-time Spectrum Analysis</h4>
+                    <div class="spectrum-controls">
+                        <span class="spectrum-info">Scanning: <span id="current-freq">433.92</span> MHz</span>
+                        <span class="spectrum-info">RSSI: <span id="current-rssi">-</span> dBm</span>
+                    </div>
+                </div>
+                <canvas id="spectrum-canvas" width="800" height="200"></canvas>
+                <div class="spectrum-legend">
+                    <span class="legend-item"><span class="legend-color" style="background: #00d4ff;"></span> Signal Strength</span>
+                    <span class="legend-item"><span class="legend-color" style="background: #ff6b35;"></span> Detected Signals</span>
+                    <span class="legend-item"><span class="legend-color" style="background: #4caf50;"></span> Identified Devices</span>
+                </div>
+            </div>
+
+            <!-- Signal Detection Results -->
             <div class="signal-display" id="signal-display">
-                Waiting for signals...
+                <div class="signal-header">
+                    <span class="signal-status">🔍 Ready to scan frequencies...</span>
+                    <span class="signal-count">Signals: <span id="signal-count">0</span></span>
+                </div>
+                <div id="signal-list" class="signal-list">
+                    <!-- Detected signals will appear here -->
+                </div>
             </div>
         </div>
 
-        <!-- Advanced Signal Analysis Card -->
+        <!-- Device Database Browser Card -->
         <div class="card">
-            <h3>📊 Advanced Analysis</h3>
-            <div class="tv-controls">
-                <button class="btn btn-info" onclick="showSignalAnalysis()">📊 Analyze Signal</button>
-                <button class="btn btn-warning" onclick="showAttackPanel()">🔓 Attack Tools</button>
-                <button class="btn btn-success" onclick="loadProtocols()">📡 Load Protocols</button>
-                <button class="btn btn-danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+            <h3>📚 RF Device Database</h3>
+            <div class="database-controls">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" id="device-search" class="form-control" placeholder="Search devices, manufacturers, or frequencies...">
+                        <button class="btn btn-primary" onclick="searchDeviceDatabase()">🔍 Search</button>
+                    </div>
+                </div>
+                <div class="filter-controls">
+                    <select id="category-filter" class="form-select" onchange="filterByCategory()">
+                        <option value="">All Categories</option>
+                        <option value="garage-door">🚪 Garage Doors</option>
+                        <option value="car-key">🚗 Car Keys</option>
+                        <option value="baby-monitor">👶 Baby Monitors</option>
+                        <option value="bluetooth">📱 Bluetooth Devices</option>
+                        <option value="wifi">📶 WiFi Access Points</option>
+                        <option value="weather-station">🌡️ Weather Stations</option>
+                        <option value="security-system">🔒 Security Systems</option>
+                        <option value="remote-control">📺 Remote Controls</option>
+                        <option value="smart-home">🏠 Smart Home</option>
+                        <option value="medical">🏥 Medical Devices</option>
+                        <option value="industrial">🏭 Industrial</option>
+                    </select>
+                    <select id="frequency-filter" class="form-select" onchange="filterByFrequency()">
+                        <option value="">All Frequencies</option>
+                        <option value="315">315 MHz (US Garage)</option>
+                        <option value="390">390 MHz (EU Car Keys)</option>
+                        <option value="433.92">433.92 MHz (ISM)</option>
+                        <option value="868">868 MHz (EU ISM)</option>
+                        <option value="915">915 MHz (US ISM)</option>
+                        <option value="2400">2.4 GHz (WiFi/BT)</option>
+                    </select>
+                </div>
             </div>
-            <div id="analysis-results" class="signal-display" style="min-height: 80px; margin-top: 1rem;">
-                No analysis data available. Capture a signal first.
+            <div id="device-results" class="device-database">
+                <div class="database-stats">
+                    <span class="stat-item">📊 Total Devices: <span id="total-devices">Loading...</span></span>
+                    <span class="stat-item">🎯 Vulnerable: <span id="vulnerable-devices">-</span></span>
+                    <span class="stat-item">🔓 No Rolling Code: <span id="unprotected-devices">-</span></span>
+                </div>
+                <div id="device-list" class="device-list">
+                    <!-- Device search results will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RF Signal Hijacking Attack Card -->
+        <div class="card">
+            <h3>🎭 RF Signal Hijacking (Evil Twin)</h3>
+            <div class="hijacking-controls">
+                <div class="form-group">
+                    <label for="hijack-mode">Attack Mode:</label>
+                    <select id="hijack-mode" class="form-select" onchange="updateHijackMode()">
+                        <option value="">Select attack mode...</option>
+                        <option value="passive-learn">🎯 Passive Learning (Safe)</option>
+                        <option value="active-hijack">⚡ Active Hijacking (Aggressive)</option>
+                        <option value="evil-twin">👥 Evil Twin Emulation</option>
+                        <option value="replay-attack">🔄 Capture & Replay</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="target-device-type">Target Device Type:</label>
+                    <select id="target-device-type" class="form-select" onchange="updateTargetFrequencies()">
+                        <option value="">Auto-detect from database...</option>
+                        <option value="car-keys">🚗 Car Key Fobs (Toyota, Honda, etc.)</option>
+                        <option value="garage-doors">🚪 Garage Door Openers</option>
+                        <option value="baby-monitors">👶 Baby Monitors</option>
+                        <option value="security-systems">🔒 Security Systems</option>
+                        <option value="remote-controls">📺 TV/Device Remotes</option>
+                        <option value="smart-home">🏠 Smart Home Devices</option>
+                        <option value="weather-stations">🌡️ Weather Stations</option>
+                        <option value="custom">⚙️ Custom Device</option>
+                    </select>
+                </div>
+                <div class="hijack-frequencies" id="hijack-frequencies" style="display: none;">
+                    <label>Target Frequencies:</label>
+                    <div id="frequency-list" class="frequency-tags">
+                        <!-- Frequencies will be populated here -->
+                    </div>
+                </div>
+                <div class="hijack-options">
+                    <div class="form-group">
+                        <label for="capture-timeout">Capture Timeout (seconds):</label>
+                        <input type="range" id="capture-timeout" min="5" max="300" value="30" class="form-range">
+                        <span id="capture-timeout-value">30s</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="hijack-sensitivity">Signal Sensitivity:</label>
+                        <select id="hijack-sensitivity" class="form-select">
+                            <option value="low">🔋 Low (Strong signals only)</option>
+                            <option value="medium" selected>⚡ Medium (Balanced)</option>
+                            <option value="high">🔥 High (All signals)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-info" onclick="startSignalHijacking()">🎭 Start Hijacking</button>
+                    <button class="btn btn-warning" onclick="startEvilTwin()">👥 Evil Twin Mode</button>
+                    <button class="btn btn-success" onclick="replayLastCapture()">🔄 Replay Last</button>
+                    <button class="btn btn-danger" onclick="stopHijacking()">🛑 Stop Attack</button>
+                </div>
+            </div>
+            <div id="hijacking-status" class="hijacking-display">
+                <div class="hijacking-header">
+                    <span class="hijacking-state">⏹️ Hijacking Inactive</span>
+                    <span class="hijacking-stats">Captured: <span id="captured-signals">0</span> | Replayed: <span id="replayed-signals">0</span></span>
+                </div>
+                <div class="progress" id="hijacking-progress" style="display: none;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div id="hijacking-log" class="hijacking-log">
+                    Ready to start RF signal hijacking. Select target device type and attack mode.
+                </div>
+            </div>
+            <div id="captured-signals-list" class="captured-signals" style="display: none;">
+                <h4>📡 Captured Signals</h4>
+                <div id="signals-container" class="signals-container">
+                    <!-- Captured signals will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Targeted Jamming Control Card -->
+        <div class="card">
+            <h3>📻 Targeted Jamming Control</h3>
+            <div class="jamming-controls">
+                <div class="form-group">
+                    <label for="jam-target">Select Target Device:</label>
+                    <select id="jam-target" class="form-select">
+                        <option value="">Choose from detected devices...</option>
+                        <option value="baby-monitors">👶 All Baby Monitors (49 MHz, 900 MHz, 2.4 GHz)</option>
+                        <option value="bluetooth-speakers">🔊 Bluetooth Speakers (2.4 GHz)</option>
+                        <option value="wifi-aps">📶 WiFi Access Points (2.4 GHz, 5 GHz)</option>
+                        <option value="garage-doors">🚪 Garage Door Openers (315/390/433 MHz)</option>
+                        <option value="car-keys">🚗 Car Key Fobs (315/390/433 MHz)</option>
+                        <option value="weather-stations">🌡️ Weather Stations (433/868/915 MHz)</option>
+                        <option value="security-systems">🔒 Security Systems (315/433/868 MHz)</option>
+                        <option value="custom">⚙️ Custom Frequency</option>
+                    </select>
+                </div>
+                <div class="form-group" id="custom-frequency-group" style="display: none;">
+                    <label for="custom-jam-freq">Custom Frequency (MHz):</label>
+                    <div class="input-group">
+                        <input type="number" id="custom-jam-freq" class="form-control" min="300" max="928" step="0.1" placeholder="433.92">
+                        <span class="input-group-text">MHz</span>
+                    </div>
+                </div>
+                <div class="jamming-options">
+                    <div class="form-group">
+                        <label for="jam-duration">Duration (seconds):</label>
+                        <input type="range" id="jam-duration" min="1" max="60" value="10" class="form-range">
+                        <span id="jam-duration-value">10s</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="jam-power">Power Level:</label>
+                        <select id="jam-power" class="form-select">
+                            <option value="low">🔋 Low (Legal/Safe)</option>
+                            <option value="medium">⚡ Medium</option>
+                            <option value="high">🔥 High (Max Power)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-warning" onclick="startTargetedJamming()">📻 Start Jamming</button>
+                    <button class="btn btn-danger" onclick="stopJamming()">🛑 Stop Jamming</button>
+                    <button class="btn btn-info" onclick="previewJammingTarget()">👁️ Preview Target</button>
+                </div>
+            </div>
+            <div id="jamming-status" class="jamming-display">
+                <div class="jamming-header">
+                    <span class="jamming-state">⏹️ Jamming Inactive</span>
+                    <span class="jamming-timer">Duration: <span id="jam-timer">0s</span></span>
+                </div>
+                <div class="progress" id="jamming-progress" style="display: none;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div id="jamming-log" class="jamming-log">
+                    Ready to jam selected targets. Choose a device category or custom frequency.
+                </div>
             </div>
         </div>
 
@@ -157,26 +365,70 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
+    <!-- Attack Dashboard Redirect Notice -->
+    <div class="card" style="text-align: center; margin: 2rem auto; max-width: 600px; border: 2px solid var(--primary-color);">
+        <h3>🎯 EvilCrow RF v2 - Attack Dashboard Available</h3>
+        <p style="margin: 1rem 0; color: var(--text-secondary);">
+            A new professional attack-focused interface is now available with advanced features:
+        </p>
+        <ul style="text-align: left; margin: 1rem 0; color: var(--text-secondary);">
+            <li>🔍 <strong>Passive Reconnaissance</strong> - Safe signal intelligence</li>
+            <li>🎭 <strong>RF Signal Hijacking</strong> - Evil Twin attacks</li>
+            <li>📻 <strong>Targeted Jamming & DoS</strong> - Precision attacks</li>
+            <li>📊 <strong>Real-time Signal Analysis</strong> - Advanced spectrum analysis</li>
+            <li>🚗 <strong>Car Key Hijacking</strong> - Vehicle security testing</li>
+            <li>👶 <strong>Baby Monitor Interception</strong> - Audio surveillance</li>
+            <li>📶 <strong>WiFi Deauth Attacks</strong> - Network disruption</li>
+            <li>🎯 <strong>MITM Attacks</strong> - Signal interception</li>
+        </ul>
+        <div class="btn-group" style="margin-top: 1.5rem;">
+            <a href="attack-dashboard.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px 24px;">
+                🚀 Launch Attack Dashboard
+            </a>
+            <button class="btn btn-info" onclick="continueWithBasic()" style="font-size: 1rem;">
+                📺 Continue with Basic Interface
+            </button>
+        </div>
+    </div>
+
     <script>
-        // Initialize the dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 EvilCrow RF v2 Dashboard Loaded');
+        function continueWithBasic() {
+            document.querySelector('.card').style.display = 'none';
+            document.querySelector('.dashboard').style.display = 'block';
+
+            // Initialize the basic dashboard
+            console.log('🚀 EvilCrow RF v2 Basic Dashboard Loaded');
             refreshStatus();
             loadTVBrands();
-            
+
             // Show TV quick controls by default
             setTimeout(() => {
-                document.getElementById('tv-quick-controls').classList.add('show');
+                const tvControls = document.getElementById('tv-quick-controls');
+                if (tvControls) tvControls.classList.add('show');
             }, 1000);
-        });
+        }
+
+        // Auto-redirect to attack dashboard after 10 seconds if no choice made
+        setTimeout(() => {
+            if (document.querySelector('.card').style.display !== 'none') {
+                window.location.href = 'attack-dashboard.html';
+            }
+        }, 10000);
 
         // Auto-refresh status every 30 seconds
-        setInterval(refreshStatus, 30000);
-        
+        setInterval(() => {
+            if (typeof refreshStatus === 'function') {
+                refreshStatus();
+            }
+        }, 30000);
+
         // Auto-refresh signal display every 5 seconds when RX is active
         setInterval(() => {
-            if (document.getElementById('rx-toggle').textContent.includes('Stop')) {
-                updateSignalDisplay();
+            const rxToggle = document.getElementById('rx-toggle');
+            if (rxToggle && rxToggle.textContent.includes('Stop')) {
+                if (typeof updateSignalDisplay === 'function') {
+                    updateSignalDisplay();
+                }
             }
         }, 5000);
     </script>

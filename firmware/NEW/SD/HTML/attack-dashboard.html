@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvilCrow RF v2 - Attack Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav id="menu">
+        <ul>
+            <li><a href="#" onclick="showSection('overview')" class="active">🎯 Attack Overview</a></li>
+            <li><a href="#" onclick="showSection('signal-analysis')">📊 Signal Analysis</a></li>
+            <li><a href="#" onclick="showSection('hijacking')">🎭 RF Hijacking</a></li>
+            <li><a href="#" onclick="showSection('jamming')">📻 Jamming & DoS</a></li>
+            <li><a href="#" onclick="showSection('database')">📚 Target Database</a></li>
+            <li><a href="#" onclick="showSection('system')">⚙️ System</a></li>
+        </ul>
+    </nav>
+
+    <!-- Attack Overview Section -->
+    <div id="overview-section" class="attack-section active">
+        <div class="dashboard">
+            <!-- Attack Command Center -->
+            <div class="card attack-command-center">
+                <h3>🎯 EvilCrow RF Attack Command Center</h3>
+
+                <!-- Attack Statistics -->
+                <div class="attack-stats-grid">
+                    <div class="attack-stat-card">
+                        <div class="attack-stat-icon">📡</div>
+                        <div class="attack-stat-content">
+                            <span class="attack-stat-value" id="signals-captured">0</span>
+                            <span class="attack-stat-label">Signals Captured</span>
+                        </div>
+                    </div>
+                    <div class="attack-stat-card">
+                        <div class="attack-stat-icon">🎭</div>
+                        <div class="attack-stat-content">
+                            <span class="attack-stat-value" id="devices-hijacked">0</span>
+                            <span class="attack-stat-label">Devices Hijacked</span>
+                        </div>
+                    </div>
+                    <div class="attack-stat-card">
+                        <div class="attack-stat-icon">📻</div>
+                        <div class="attack-stat-content">
+                            <span class="attack-stat-value" id="signals-jammed">0</span>
+                            <span class="attack-stat-label">Signals Jammed</span>
+                        </div>
+                    </div>
+                    <div class="attack-stat-card">
+                        <div class="attack-stat-icon">🎯</div>
+                        <div class="attack-stat-content">
+                            <span class="attack-stat-value" id="targets-identified">0</span>
+                            <span class="attack-stat-label">Targets Identified</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Attack Launcher -->
+                <div class="quick-attack-section">
+                    <h4>🚀 Quick Attack Launcher</h4>
+                    <div class="quick-attack-grid">
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('passive-recon')">
+                            <div class="quick-attack-icon">🔍</div>
+                            <div class="quick-attack-content">
+                                <strong>Passive Recon</strong>
+                                <span>Safe signal intelligence</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('car-hijack')">
+                            <div class="quick-attack-icon">🚗</div>
+                            <div class="quick-attack-content">
+                                <strong>Car Key Hijack</strong>
+                                <span>Steal key fob signals</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('garage-attack')">
+                            <div class="quick-attack-icon">🚪</div>
+                            <div class="quick-attack-content">
+                                <strong>Garage Door Attack</strong>
+                                <span>Capture & replay codes</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('baby-monitor-intercept')">
+                            <div class="quick-attack-icon">👶</div>
+                            <div class="quick-attack-content">
+                                <strong>Baby Monitor</strong>
+                                <span>Audio interception</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('wifi-deauth')">
+                            <div class="quick-attack-icon">📶</div>
+                            <div class="quick-attack-content">
+                                <strong>WiFi Deauth</strong>
+                                <span>DoS attacks</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('spectrum-jam')">
+                            <div class="quick-attack-icon">📻</div>
+                            <div class="quick-attack-content">
+                                <strong>Spectrum Jam</strong>
+                                <span>Wideband jamming</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('evil-twin')">
+                            <div class="quick-attack-icon">👥</div>
+                            <div class="quick-attack-content">
+                                <strong>Evil Twin</strong>
+                                <span>Device emulation</span>
+                            </div>
+                        </button>
+                        <button class="quick-attack-btn" onclick="launchQuickAttack('mitm-attack')">
+                            <div class="quick-attack-icon">🔄</div>
+                            <div class="quick-attack-content">
+                                <strong>MITM Attack</strong>
+                                <span>Signal interception</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Operations Monitor -->
+                <div class="active-operations-section">
+                    <h4>⚡ Active Operations</h4>
+                    <div id="active-operations-list" class="operations-list">
+                        <div class="no-operations">No active operations - Ready to launch attacks</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Threat Intelligence -->
+            <div class="card threat-intelligence">
+                <h3>🎯 Real-time Threat Intelligence</h3>
+                <div class="threat-grid">
+                    <div class="threat-item">
+                        <span class="threat-label">Detected Devices:</span>
+                        <span class="threat-value" id="detected-devices">Scanning...</span>
+                    </div>
+                    <div class="threat-item">
+                        <span class="threat-label">Vulnerable Targets:</span>
+                        <span class="threat-value" id="vulnerable-targets">-</span>
+                    </div>
+                    <div class="threat-item">
+                        <span class="threat-label">Active Frequencies:</span>
+                        <span class="threat-value" id="active-frequencies">-</span>
+                    </div>
+                    <div class="threat-item">
+                        <span class="threat-label">Signal Strength:</span>
+                        <span class="threat-value" id="signal-strength">-</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startThreatScan()">🔍 Scan Environment</button>
+                    <button class="btn btn-info" onclick="refreshThreatIntel()">🔄 Refresh Intel</button>
+                    <button class="btn btn-warning" onclick="exportThreatData()">📊 Export Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signal Analysis Section -->
+    <div id="signal-analysis-section" class="attack-section">
+        <div class="dashboard">
+            <!-- Real-time Spectrum Analyzer -->
+            <div class="card spectrum-analyzer-card">
+                <h3>📊 Real-time Signal Analysis Engine</h3>
+
+                <!-- Analysis Controls -->
+                <div class="analysis-controls">
+                    <div class="form-group">
+                        <label>Analysis Mode:</label>
+                        <select id="analysis-mode" class="form-select">
+                            <option value="passive">🎯 Passive Learning</option>
+                            <option value="active">⚡ Active Analysis</option>
+                            <option value="deep">🔬 Deep Inspection</option>
+                            <option value="realtime">📡 Real-time Monitoring</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency Range:</label>
+                        <div class="frequency-range-controls">
+                            <input type="number" id="freq-start" value="300" min="300" max="928" step="0.1">
+                            <span>to</span>
+                            <input type="number" id="freq-end" value="928" min="300" max="928" step="0.1">
+                            <span>MHz</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="startSignalAnalysis()">📊 Start Analysis</button>
+                        <button class="btn btn-info" onclick="startSpectrumAnalyzer()">📈 Spectrum View</button>
+                        <button class="btn btn-warning" onclick="captureSignalSnapshot()">📸 Snapshot</button>
+                        <button class="btn btn-danger" onclick="stopAnalysis()">🛑 Stop</button>
+                    </div>
+                </div>
+
+                <!-- Spectrum Display -->
+                <div class="spectrum-display" id="spectrum-display">
+                    <canvas id="spectrum-canvas" width="800" height="300"></canvas>
+                    <div class="spectrum-info">
+                        <span>Current: <span id="current-frequency">433.92</span> MHz</span>
+                        <span>RSSI: <span id="current-rssi">-</span> dBm</span>
+                        <span>Signals: <span id="detected-signals-count">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Signal Detection Results -->
+                <div class="signal-results" id="signal-results">
+                    <h4>🎯 Detected Signals</h4>
+                    <div id="detected-signals-list" class="signals-list">
+                        <!-- Detected signals will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RF Hijacking Section -->
+    <div id="hijacking-section" class="attack-section">
+        <div class="dashboard">
+            <!-- Copy the hijacking card from index.html -->
+            <div class="card">
+                <h3>🎭 RF Signal Hijacking (Evil Twin)</h3>
+                <div class="hijacking-controls">
+                    <div class="form-group">
+                        <label for="hijack-mode">Attack Mode:</label>
+                        <select id="hijack-mode" class="form-select" onchange="updateHijackMode()">
+                            <option value="">Select attack mode...</option>
+                            <option value="passive-learn">🎯 Passive Learning (Safe)</option>
+                            <option value="active-hijack">⚡ Active Hijacking (Aggressive)</option>
+                            <option value="evil-twin">👥 Evil Twin Emulation</option>
+                            <option value="replay-attack">🔄 Capture & Replay</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="target-device-type">Target Device Type:</label>
+                        <select id="target-device-type" class="form-select" onchange="updateTargetFrequencies()">
+                            <option value="">Auto-detect from database...</option>
+                            <option value="car-keys">🚗 Car Key Fobs (Toyota, Honda, etc.)</option>
+                            <option value="garage-doors">🚪 Garage Door Openers</option>
+                            <option value="baby-monitors">👶 Baby Monitors</option>
+                            <option value="security-systems">🔒 Security Systems</option>
+                            <option value="remote-controls">📺 TV/Device Remotes</option>
+                            <option value="smart-home">🏠 Smart Home Devices</option>
+                            <option value="weather-stations">🌡️ Weather Stations</option>
+                            <option value="custom">⚙️ Custom Device</option>
+                        </select>
+                    </div>
+                    <div class="hijack-frequencies" id="hijack-frequencies" style="display: none;">
+                        <label>Target Frequencies:</label>
+                        <div id="frequency-list" class="frequency-tags">
+                            <!-- Frequencies will be populated here -->
+                        </div>
+                    </div>
+                    <div class="hijack-options">
+                        <div class="form-group">
+                            <label for="capture-timeout">Capture Timeout (seconds):</label>
+                            <input type="range" id="capture-timeout" min="5" max="300" value="30" class="form-range">
+                            <span id="capture-timeout-value">30s</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="hijack-sensitivity">Signal Sensitivity:</label>
+                            <select id="hijack-sensitivity" class="form-select">
+                                <option value="low">🔋 Low (Strong signals only)</option>
+                                <option value="medium" selected>⚡ Medium (Balanced)</option>
+                                <option value="high">🔥 High (All signals)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-info" onclick="startSignalHijacking()">🎭 Start Hijacking</button>
+                        <button class="btn btn-warning" onclick="startEvilTwin()">👥 Evil Twin Mode</button>
+                        <button class="btn btn-success" onclick="replayLastCapture()">🔄 Replay Last</button>
+                        <button class="btn btn-danger" onclick="stopHijacking()">🛑 Stop Attack</button>
+                    </div>
+                </div>
+                <div id="hijacking-status" class="hijacking-display">
+                    <div class="hijacking-header">
+                        <span class="hijacking-state">⏹️ Hijacking Inactive</span>
+                        <span class="hijacking-stats">Captured: <span id="captured-signals">0</span> | Replayed: <span id="replayed-signals">0</span></span>
+                    </div>
+                    <div class="progress" id="hijacking-progress" style="display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="hijacking-log" class="hijacking-log">
+                        Ready to start RF signal hijacking. Select target device type and attack mode.
+                    </div>
+                </div>
+                <div id="captured-signals-list" class="captured-signals" style="display: none;">
+                    <h4>📡 Captured Signals</h4>
+                    <div id="signals-container" class="signals-container">
+                        <!-- Captured signals will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jamming & DoS Section -->
+    <div id="jamming-section" class="attack-section">
+        <div class="dashboard">
+            <!-- Targeted Jamming Control Card -->
+            <div class="card">
+                <h3>📻 Targeted Jamming & DoS Control</h3>
+                <div class="jamming-controls">
+                    <div class="form-group">
+                        <label for="jam-target">Select Target Device:</label>
+                        <select id="jam-target" class="form-select">
+                            <option value="">Choose from detected devices...</option>
+                            <option value="baby-monitors">👶 All Baby Monitors (49 MHz, 900 MHz, 2.4 GHz)</option>
+                            <option value="bluetooth-speakers">🔊 Bluetooth Speakers (2.4 GHz)</option>
+                            <option value="wifi-aps">📶 WiFi Access Points (2.4 GHz, 5 GHz)</option>
+                            <option value="garage-doors">🚪 Garage Door Openers (315/390/433 MHz)</option>
+                            <option value="car-keys">🚗 Car Key Fobs (315/390/433 MHz)</option>
+                            <option value="weather-stations">🌡️ Weather Stations (433/868/915 MHz)</option>
+                            <option value="security-systems">🔒 Security Systems (315/433/868 MHz)</option>
+                            <option value="custom">⚙️ Custom Frequency</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="custom-frequency-group" style="display: none;">
+                        <label for="custom-jam-freq">Custom Frequency (MHz):</label>
+                        <div class="input-group">
+                            <input type="number" id="custom-jam-freq" class="form-control" min="300" max="928" step="0.1" placeholder="433.92">
+                            <span class="input-group-text">MHz</span>
+                        </div>
+                    </div>
+                    <div class="jamming-options">
+                        <div class="form-group">
+                            <label for="jam-duration">Duration (seconds):</label>
+                            <input type="range" id="jam-duration" min="1" max="60" value="10" class="form-range">
+                            <span id="jam-duration-value">10s</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="jam-power">Power Level:</label>
+                            <select id="jam-power" class="form-select">
+                                <option value="low">🔋 Low (Legal/Safe)</option>
+                                <option value="medium">⚡ Medium</option>
+                                <option value="high">🔥 High (Max Power)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-warning" onclick="startTargetedJamming()">📻 Start Jamming</button>
+                        <button class="btn btn-danger" onclick="stopJamming()">🛑 Stop Jamming</button>
+                        <button class="btn btn-info" onclick="previewJammingTarget()">👁️ Preview Target</button>
+                    </div>
+                </div>
+                <div id="jamming-status" class="jamming-display">
+                    <div class="jamming-header">
+                        <span class="jamming-state">⏹️ Jamming Inactive</span>
+                        <span class="jamming-timer">Duration: <span id="jam-timer">0s</span></span>
+                    </div>
+                    <div class="progress" id="jamming-progress" style="display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="jamming-log" class="jamming-log">
+                        Ready to jam selected targets. Choose a device category or custom frequency.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Target Database Section -->
+    <div id="database-section" class="attack-section">
+        <div class="dashboard">
+            <!-- Device Database Browser Card -->
+            <div class="card">
+                <h3>📚 RF Device Database & Target Intelligence</h3>
+                <div class="database-controls">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" id="device-search" class="form-control" placeholder="Search devices, manufacturers, or frequencies...">
+                            <button class="btn btn-primary" onclick="searchDeviceDatabase()">🔍 Search</button>
+                        </div>
+                    </div>
+                    <div class="filter-controls">
+                        <select id="category-filter" class="form-select" onchange="filterByCategory()">
+                            <option value="">All Categories</option>
+                            <option value="garage-door">🚪 Garage Doors</option>
+                            <option value="car-key">🚗 Car Keys</option>
+                            <option value="baby-monitor">👶 Baby Monitors</option>
+                            <option value="bluetooth">📱 Bluetooth Devices</option>
+                            <option value="wifi">📶 WiFi Access Points</option>
+                            <option value="weather-station">🌡️ Weather Stations</option>
+                            <option value="security-system">🔒 Security Systems</option>
+                            <option value="remote-control">📺 Remote Controls</option>
+                            <option value="smart-home">🏠 Smart Home</option>
+                            <option value="medical">🏥 Medical Devices</option>
+                            <option value="industrial">🏭 Industrial</option>
+                        </select>
+                        <select id="frequency-filter" class="form-select" onchange="filterByFrequency()">
+                            <option value="">All Frequencies</option>
+                            <option value="315">315 MHz (US Garage)</option>
+                            <option value="390">390 MHz (EU Car Keys)</option>
+                            <option value="433.92">433.92 MHz (ISM)</option>
+                            <option value="868">868 MHz (EU ISM)</option>
+                            <option value="915">915 MHz (US ISM)</option>
+                            <option value="2400">2.4 GHz (WiFi/BT)</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="device-results" class="device-database">
+                    <div class="database-stats">
+                        <span class="stat-item">📊 Total Devices: <span id="total-devices">Loading...</span></span>
+                        <span class="stat-item">🎯 Vulnerable: <span id="vulnerable-devices">-</span></span>
+                        <span class="stat-item">🔓 No Rolling Code: <span id="unprotected-devices">-</span></span>
+                    </div>
+                    <div id="device-list" class="device-list">
+                        <!-- Device search results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Section -->
+    <div id="system-section" class="attack-section">
+        <div class="dashboard">
+            <!-- System Status Card -->
+            <div class="card">
+                <h3>⚙️ System Status & Control</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">Status:</span>
+                        <span id="status" class="status-value">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Uptime:</span>
+                        <span id="uptime" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Memory:</span>
+                        <span id="memory" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Clients:</span>
+                        <span id="clients" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Frequency:</span>
+                        <span id="frequency" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Database:</span>
+                        <span id="database-entries" class="status-value">-</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="refreshStatus()">🔄 Refresh</button>
+                    <button class="btn btn-info" onclick="showSystemInfo()">ℹ️ System Info</button>
+                    <button class="btn btn-warning" onclick="rebootSystem()">🔄 Reboot</button>
+                    <button class="btn btn-danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+            <!-- Real-time Spectrum Analyzer -->
+            <div class="card spectrum-analyzer-card">
+                <h3>📊 Real-time Signal Analysis Engine</h3>
+
+                <!-- Analysis Controls -->
+                <div class="analysis-controls">
+                    <div class="form-group">
+                        <label>Analysis Mode:</label>
+                        <select id="analysis-mode" class="form-select">
+                            <option value="passive">🎯 Passive Learning</option>
+                            <option value="active">⚡ Active Analysis</option>
+                            <option value="deep">🔬 Deep Inspection</option>
+                            <option value="realtime">📡 Real-time Monitoring</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency Range:</label>
+                        <div class="frequency-range-controls">
+                            <input type="number" id="freq-start" value="300" min="300" max="928" step="0.1">
+                            <span>to</span>
+                            <input type="number" id="freq-end" value="928" min="300" max="928" step="0.1">
+                            <span>MHz</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="startSignalAnalysis()">📊 Start Analysis</button>
+                        <button class="btn btn-info" onclick="startSpectrumAnalyzer()">📈 Spectrum View</button>
+                        <button class="btn btn-warning" onclick="captureSignalSnapshot()">📸 Snapshot</button>
+                        <button class="btn btn-danger" onclick="stopAnalysis()">🛑 Stop</button>
+                    </div>
+                </div>
+
+                <!-- Spectrum Display -->
+                <div class="spectrum-display" id="spectrum-display">
+                    <canvas id="spectrum-canvas" width="800" height="300"></canvas>
+                    <div class="spectrum-info">
+                        <span>Current: <span id="current-frequency">433.92</span> MHz</span>
+                        <span>RSSI: <span id="current-rssi">-</span> dBm</span>
+                        <span>Signals: <span id="detected-signals-count">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Signal Detection Results -->
+                <div class="signal-results" id="signal-results">
+                    <h4>🎯 Detected Signals</h4>
+                    <div id="detected-signals-list" class="signals-list">
+                        <!-- Detected signals will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include JavaScript -->
+    <script src="javascript.js"></script>
+    <script>
+        // Attack Dashboard specific functions
+        let currentSection = 'overview';
+        let attackStats = {
+            signalsCaptured: 0,
+            devicesHijacked: 0,
+            signalsJammed: 0,
+            targetsIdentified: 0
+        };
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.attack-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('#menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            currentSection = sectionName;
+        }
+
+        function launchQuickAttack(attackType) {
+            const attackConfigs = {
+                'passive-recon': {
+                    name: 'Passive Reconnaissance',
+                    description: 'Safe signal intelligence gathering',
+                    action: () => startPassiveRecon()
+                },
+                'car-hijack': {
+                    name: 'Car Key Hijacking',
+                    description: 'Intercept and replay car key signals',
+                    action: () => startCarKeyHijack()
+                },
+                'garage-attack': {
+                    name: 'Garage Door Attack',
+                    description: 'Capture and replay garage door codes',
+                    action: () => startGarageAttack()
+                },
+                'baby-monitor-intercept': {
+                    name: 'Baby Monitor Interception',
+                    description: 'Intercept baby monitor audio',
+                    action: () => startBabyMonitorIntercept()
+                },
+                'wifi-deauth': {
+                    name: 'WiFi Deauth Attack',
+                    description: 'Disconnect devices from WiFi networks',
+                    action: () => startWiFiDeauth()
+                },
+                'spectrum-jam': {
+                    name: 'Spectrum Jamming',
+                    description: 'Wideband signal jamming',
+                    action: () => startSpectrumJam()
+                },
+                'evil-twin': {
+                    name: 'Evil Twin Attack',
+                    description: 'Emulate target devices',
+                    action: () => startEvilTwinAttack()
+                },
+                'mitm-attack': {
+                    name: 'MITM Attack',
+                    description: 'Man-in-the-middle signal interception',
+                    action: () => startMITMAttack()
+                }
+            };
+
+            const config = attackConfigs[attackType];
+            if (config) {
+                if (confirm(`Launch ${config.name}?\n\n${config.description}\n\nThis may interfere with legitimate communications.`)) {
+                    showToast(`Launching ${config.name}...`, 'warning');
+                    config.action();
+                }
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 EvilCrow RF Attack Dashboard Initialized');
+            refreshAttackStats();
+            startThreatIntelligence();
+        });
+    </script>
+</body>
+</html>
