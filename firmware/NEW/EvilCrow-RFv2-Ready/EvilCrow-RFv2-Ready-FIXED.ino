@@ -160,85 +160,6 @@ int patternCount = 0;
 ProtocolSignature protocols[30];
 int protocolCount = 0;
 
-// ===== USB SDR FUNCTIONALITY =====
-
-// SDR State Structure
-struct SDRState
-{
-    bool active;
-    bool streaming;
-    uint32_t sampleRate;
-    float centerFreq;
-    uint8_t gain;
-    String mode;     // "hackrf", "rtlsdr", "gnuradio", "custom"
-    String protocol; // "binary", "text", "hackrf_protocol"
-    bool autoGain;
-    uint16_t bufferSize;
-    unsigned long lastSampleTime;
-    uint32_t samplesTransmitted;
-} sdrState;
-
-// CC1101 Register Definitions for SDR Mode
-#define CC1101_IOCFG2 0x00
-#define CC1101_IOCFG1 0x01
-#define CC1101_IOCFG0 0x02
-#define CC1101_FIFOTHR 0x03
-#define CC1101_SYNC1 0x04
-#define CC1101_SYNC0 0x05
-#define CC1101_PKTLEN 0x06
-#define CC1101_PKTCTRL1 0x07
-#define CC1101_PKTCTRL0 0x08
-#define CC1101_ADDR 0x09
-#define CC1101_CHANNR 0x0A
-#define CC1101_FSCTRL1 0x0B
-#define CC1101_FSCTRL0 0x0C
-#define CC1101_FREQ2 0x0D
-#define CC1101_FREQ1 0x0E
-#define CC1101_FREQ0 0x0F
-#define CC1101_MDMCFG4 0x10
-#define CC1101_MDMCFG3 0x11
-#define CC1101_MDMCFG2 0x12
-#define CC1101_MDMCFG1 0x13
-#define CC1101_MDMCFG0 0x14
-#define CC1101_DEVIATN 0x15
-#define CC1101_MCSM2 0x16
-#define CC1101_MCSM1 0x17
-#define CC1101_MCSM0 0x18
-#define CC1101_FOCCFG 0x19
-#define CC1101_BSCFG 0x1A
-#define CC1101_AGCCTRL2 0x1B
-#define CC1101_AGCCTRL1 0x1C
-#define CC1101_AGCCTRL0 0x1D
-#define CC1101_WOREVT1 0x1E
-#define CC1101_WOREVT0 0x1F
-#define CC1101_WORCTRL 0x20
-#define CC1101_FREND1 0x21
-#define CC1101_FREND0 0x22
-#define CC1101_FSCAL3 0x23
-#define CC1101_FSCAL2 0x24
-#define CC1101_FSCAL1 0x25
-#define CC1101_FSCAL0 0x26
-#define CC1101_RCCTRL1 0x27
-#define CC1101_RCCTRL0 0x28
-
-// SDR Command Buffer
-String sdrCommandBuffer = "";
-bool sdrCommandReady = false;
-
-// IQ Sample Buffer
-struct IQSample
-{
-    int16_t i;
-    int16_t q;
-};
-
-IQSample iqBuffer[512];
-uint16_t iqBufferIndex = 0;
-
-// Spectrum Analysis Buffer
-float spectrumData[256];
-bool spectrumReady = false;
-
 // ===== ARDUINO MAIN FUNCTIONS =====
 
 void setup()
@@ -747,8 +668,8 @@ void setupWebServer()
         } else {
             analyzeFrequencyHopping(433.92);
         }
-
-        String response = "{\"status\":\"success\",\"analysis\":\"frequency_hopping\",\"patterns_detected\":" +
+        
+        String response = "{\"status\":\"success\",\"analysis\":\"frequency_hopping\",\"patterns_detected\":" + 
                          String(advancedState.patterns_detected) + ",\"message\":\"Frequency hopping analysis complete\"}";
         server.send(200, "application/json", response); });
 
@@ -756,13 +677,13 @@ void setupWebServer()
               {
         String freq = server.arg("frequency");
         String modType = server.arg("modulation");
-
+        
         if (freq.length() == 0) freq = "433.92";
         if (modType.length() == 0) modType = "ASK";
-
+        
         performAdvancedDemodulation(freq.toFloat(), modType);
-
-        String response = "{\"status\":\"success\",\"analysis\":\"demodulation\",\"frequency\":" + freq +
+        
+        String response = "{\"status\":\"success\",\"analysis\":\"demodulation\",\"frequency\":" + freq + 
                          ",\"modulation\":\"" + modType + "\",\"security_level\":" + String(currentProfile.security_level) + "}";
         server.send(200, "application/json", response); });
 
@@ -770,11 +691,11 @@ void setupWebServer()
               {
         String data = server.arg("signal_data");
         if (data.length() == 0) data = "101010101100110011001100"; // Default test pattern
-
+        
         reverseEngineerProtocol(data);
-
-        String response = "{\"status\":\"success\",\"analysis\":\"protocol_reverse\",\"protocols_identified\":" +
-                         String(advancedState.protocols_identified) + ",\"latest_protocol\":\"" +
+        
+        String response = "{\"status\":\"success\",\"analysis\":\"protocol_reverse\",\"protocols_identified\":" + 
+                         String(advancedState.protocols_identified) + ",\"latest_protocol\":\"" + 
                          protocols[protocolCount-1].protocol_name + "\"}";
         server.send(200, "application/json", response); });
 
@@ -786,10 +707,10 @@ void setupWebServer()
         } else {
             performDeviceFingerprinting(433.92);
         }
-
+        
         DeviceFingerprint latest = knownDevices[deviceCount-1];
-        String response = "{\"status\":\"success\",\"analysis\":\"fingerprint\",\"devices_fingerprinted\":" +
-                         String(advancedState.devices_fingerprinted) + ",\"latest_device\":\"" + latest.device_name +
+        String response = "{\"status\":\"success\",\"analysis\":\"fingerprint\",\"devices_fingerprinted\":" + 
+                         String(advancedState.devices_fingerprinted) + ",\"latest_device\":\"" + latest.device_name + 
                          "\",\"threat_level\":" + String(latest.threat_level) + "}";
         server.send(200, "application/json", response); });
 
@@ -801,10 +722,10 @@ void setupWebServer()
         } else {
             performPredictiveAnalysis(433.92);
         }
-
+        
         PredictivePattern latest = patterns[patternCount-1];
-        String response = "{\"status\":\"success\",\"analysis\":\"predictive\",\"predictions_made\":" +
-                         String(advancedState.predictions_made) + ",\"latest_pattern\":\"" + latest.pattern_id +
+        String response = "{\"status\":\"success\",\"analysis\":\"predictive\",\"predictions_made\":" + 
+                         String(advancedState.predictions_made) + ",\"latest_pattern\":\"" + latest.pattern_id + 
                          "\",\"accuracy\":" + String(latest.prediction_accuracy) + "}";
         server.send(200, "application/json", response); });
 
@@ -845,7 +766,7 @@ void setupExistingAPIEndpoints()
               {
         String brand = server.arg("brand");
         String command = server.arg("command");
-
+        
         String response = "{\"status\":\"success\",\"brand\":\"" + brand + "\",\"command\":\"" + command + "\",\"message\":\"Command sent successfully\"}";
         server.send(200, "application/json", response); });
 
@@ -855,7 +776,7 @@ void setupExistingAPIEndpoints()
         String freq = server.arg("freq");
         String foundDevice = "Unknown";
         String category = "unknown";
-
+        
         for (int i = 0; i < databaseSize; i++) {
             if (signalDatabase[i].frequency_str == freq) {
                 foundDevice = signalDatabase[i].name;
@@ -863,7 +784,7 @@ void setupExistingAPIEndpoints()
                 break;
             }
         }
-
+        
         String response = "{\"status\":\"success\",\"frequency\":" + freq + ",\"device\":\"" + foundDevice + "\",\"category\":\"" + category + "\"}";
         server.send(200, "application/json", response); });
 
@@ -898,20 +819,20 @@ String getModernWebInterface()
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             min-height: 100vh;
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-
+        
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -920,7 +841,7 @@ String getModernWebInterface()
             border-radius: 15px;
             backdrop-filter: blur(10px);
         }
-
+        
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
@@ -928,14 +849,14 @@ String getModernWebInterface()
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
+        
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
+        
         .card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
@@ -944,17 +865,17 @@ String getModernWebInterface()
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.3s ease;
         }
-
+        
         .card:hover {
             transform: translateY(-5px);
         }
-
+        
         .card h3 {
             color: #4ecdc4;
             margin-bottom: 15px;
             font-size: 1.3em;
         }
-
+        
         .btn {
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
             border: none;
@@ -966,22 +887,22 @@ String getModernWebInterface()
             margin: 5px;
             transition: all 0.3s ease;
         }
-
+        
         .btn:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-
+        
         .input-group {
             margin: 15px 0;
         }
-
+        
         .input-group label {
             display: block;
             margin-bottom: 5px;
             color: #ccc;
         }
-
+        
         .input-group input, .input-group select {
             width: 100%;
             padding: 10px;
@@ -991,18 +912,18 @@ String getModernWebInterface()
             color: white;
             backdrop-filter: blur(5px);
         }
-
+        
         .input-group input::placeholder {
             color: #aaa;
         }
-
+        
         .status-panel {
             background: rgba(0, 0, 0, 0.2);
             border-radius: 15px;
             padding: 20px;
             margin-top: 20px;
         }
-
+        
         .metrics {
             display: flex;
             justify-content: space-around;
@@ -1010,7 +931,7 @@ String getModernWebInterface()
             gap: 15px;
             margin: 20px 0;
         }
-
+        
         .metric {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
@@ -1018,18 +939,18 @@ String getModernWebInterface()
             border-radius: 10px;
             min-width: 100px;
         }
-
+        
         .metric-value {
             font-size: 2em;
             font-weight: bold;
             color: #4ecdc4;
         }
-
+        
         .metric-label {
             font-size: 0.9em;
             color: #ccc;
         }
-
+        
         .log-area {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
@@ -1040,14 +961,14 @@ String getModernWebInterface()
             font-size: 0.9em;
             margin-top: 15px;
         }
-
+        
         .advanced-section {
             background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
             border-radius: 15px;
             padding: 20px;
             margin: 20px 0;
         }
-
+        
         .advanced-section h2 {
             text-align: center;
             margin-bottom: 20px;
